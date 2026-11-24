@@ -1,8 +1,3 @@
-"""Simplified two-branch model based on liptonMartin's MAI notebook:
-https://github.com/liptonMartin/mai_labs_machine_learning (lab_1/01_train_sklearn.ipynb).
-The branch architecture and input columns are retained; numeric cut points are
-estimated in fit. Each branch is OLS, but the weighted blend is not a single OLS.
-"""
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LinearRegression
@@ -17,7 +12,6 @@ WEIGHT_COLUMNS = ['TotalDebtToIncomeRatio', 'MonthlyIncome', 'InterestRate', 'Ne
 
 
 def main_features(frame, cuts):
-    """Six bucket numbers and three flags; each step in a bucket has the same weight."""
     features = {name: sum(frame[name].ge(t) for t in thresholds)
                 for name, thresholds in cuts.items()}
     features['Bankruptcy'] = frame.BankruptcyHistory.fillna(0.0)
@@ -27,7 +21,6 @@ def main_features(frame, cuts):
 
 
 def _column_cuts(values, response):
-    """Find steps in a partial response sorted by one predictor."""
     n = len(values)
     prefix = np.r_[0, np.cumsum(response)]
     candidates = np.flatnonzero(values[:-1] != values[1:]) + 1
@@ -62,8 +55,6 @@ def index_features(frame):
 
 
 class CompleteRowsOnly:
-    """Exclude incomplete training examples, but predict on every evaluation row."""
-
     def __init__(self, inner):
         self.inner = inner
 
@@ -83,7 +74,6 @@ class BranchMixtureRegression:
 
     @staticmethod
     def _assign_branches(x, y):
-        """Alternate OLS fits and assignment to the branch with the smaller error."""
         high = y > np.median(y)
         if min(high.sum(), (~high).sum()) < 2:
             raise ValueError('Cannot split the sample into two branches')

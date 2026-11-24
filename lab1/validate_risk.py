@@ -1,8 +1,3 @@
-"""Leakage-free cross-validation shared by the notebook and the model modules.
-
-The notebook imports `training_rows` and `cross_validate` from here. Nothing in
-this module writes files or parses command-line arguments.
-"""
 import json
 
 import numpy as np
@@ -11,13 +6,11 @@ TARGET_MSE = 19.0
 
 
 def training_rows(frame):
-    """Discard duplicated rows and absent/technical targets, never impute y."""
     result = frame.drop_duplicates()
     return result.loc[result.RiskScore.between(0, 100)].copy()
 
 
 def evaluate_rows(frame, prediction):
-    """MSE, MAE and R2 overall and split by completeness of the predictor row."""
     y = frame.RiskScore.to_numpy(dtype=float)
     prediction = np.asarray(prediction, dtype=float)
     if prediction.shape != y.shape or not np.isfinite(prediction).all():
@@ -34,7 +27,6 @@ def evaluate_rows(frame, prediction):
 
 
 def cross_validate(frame, model_factory, n_splits=5, seed=314159):
-    """Out-of-fold predictions; a model never sees its validation rows."""
     if not 2 <= n_splits <= len(frame):
         raise ValueError('folds must be between 2 and the number of training rows')
     folds = np.array_split(np.random.default_rng(seed).permutation(len(frame)), n_splits)
