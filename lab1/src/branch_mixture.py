@@ -36,7 +36,7 @@ def _column_cuts(values, response):
         p = candidates[(candidates >= lo + 20) & (candidates <= hi - 20)]
         if not len(p):
             return 0.0, None
-        # Reduction in squared error from separate left/right means.
+
         diff = (prefix[p] - prefix[lo]) / (p - lo) - (prefix[hi] - prefix[p]) / (hi - p)
         gain = (p - lo) * (hi - p) / (hi - lo) * diff ** 2
         k = gain.argmax()
@@ -49,7 +49,7 @@ def _column_cuts(values, response):
         if p is None or gain <= min_gain:
             break
         bounds = sorted([*bounds, p])
-    # Revisit early choices now that their neighboring boundaries are known.
+
     for _ in range(3):
         for i in range(1, len(bounds) - 1):
             _, bounds[i] = best_split(bounds[i - 1], bounds[i + 1])
@@ -104,7 +104,7 @@ class BranchMixtureRegression:
             high = self._assign_branches(x, y)
             low_fit, high_fit = (LinearRegression().fit(x[m], y[m]) for m in (~high, high))
             residual = y - np.where(high, high_fit.predict(x), low_fit.predict(x))
-            # Limit the influence of outliers on cut selection, not on final OLS.
+
             mad = np.median(np.abs(residual - np.median(residual)))
             residual = residual.clip(-4 * mad, 4 * mad)
             for j, c in enumerate(BUCKET_COLUMNS):
